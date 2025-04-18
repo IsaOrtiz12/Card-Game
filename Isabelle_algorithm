@@ -55,6 +55,78 @@ def display_round_start(current_round):
 
 def display_bidding_outcome(bids, winning_player, winning_bid):
     """
-    Displays the bids made by each player and the outcome of the bidding."""
+    Displays the bids made by each player and the outcome of the bidding.
+    Args:
+        bids (dict): A dictionary where keys are player names and values are their bids.
+        winning_player (str): The name of the player who won the bid.
+        winning_bid (int): The winning bid amount.
+    """
+    print("\n--- Bidding Outcome ---")
+    for player, bid in bids.items():
+        print(f"{player} bid: {bid}")
+    print(f"Winner of the round: {winning_player} with a bid of {winning_bid}")
+    print("-----------------------")
 
-    
+# --- Mock Functions (for demonstration purposes) ---
+def mock_reveal_card():
+    """
+    A mock function that simulates revealing a card.
+    In the real game, this would interact with Kevin's card logic.
+    """
+    import random
+    effects = ["Resource Gain", "Resource Loss", "No Effect"]
+    return random.choice(effects)
+
+def mock_apply_card_effect(player_resources, card_effect, bid_amount, winning_player):
+    """
+    A mock function that simulates applying the effect of a revealed card.
+    In the real game, this would interact with Ibrahim's resource management logic.
+    """
+    updated_resources = player_resources.copy()
+    if card_effect == "Resource Gain":
+        gain = random.randint(5, 15)
+        updated_resources[winning_player] += gain
+        print(f"The card granted {gain} resources to {winning_player}.")
+    elif card_effect == "Resource Loss":
+        loss = random.randint(5, 10)
+        updated_resources[winning_player] -= loss
+        print(f"The card cost {loss} resources to {winning_player}.")
+    elif card_effect == "No Effect":
+        print("The card had no immediate effect.")
+    return updated_resources
+
+if __name__ == "__main__":
+    # Mock game setup
+    players = ["Player 1", "Player 2"]
+    player_resources = {"Player 1": 50, "Player 2": 50}
+    cards_in_deck = 10
+    round_number = 1
+    last_round = None
+
+    # Simulate a single round
+    display_round_start(round_number)
+    display_game_state(player_resources, cards_in_deck, last_round)
+
+    bids = {}
+    for player in players:
+        bid = get_player_bid(player_resources[player])
+        bids[player] = bid
+
+    # Mock bidding winner determination (replace with Andrew's logic)
+    winning_player = max(bids, key=bids.get)
+    winning_bid = bids[winning_player]
+
+    display_bidding_outcome(bids, winning_player, winning_bid)
+
+    # Mock card reveal and effect application
+    revealed_card = mock_reveal_card()
+    print(f"\nRevealed Card: {revealed_card}")
+    player_resources = mock_apply_card_effect(player_resources, revealed_card, winning_bid, winning_player)
+    player_resources[winning_player] -= winning_bid # Deduct the bid cost
+
+    cards_in_deck -= 1
+    last_round = {"winner": winning_player, "winning_bid": winning_bid, "revealed_card": revealed_card}
+
+    display_game_state(player_resources, cards_in_deck, last_round) 
+
+
