@@ -1,0 +1,35 @@
+def get_player_bid(player_resources):
+    """
+    Prompts the current player to enter their secret bid, validates the input,
+    and returns the valid bid amount.
+
+    Args:
+        player_resources (int): The current resource total of the player.
+
+    Returns:
+        int: A valid bid amount entered by the player.
+    """
+    while True:
+        try:
+            bid_str = input(f"Enter your secret bid (0-{player_resources}): ")
+            bid = int(bid_str)
+            if 0 <= bid <= player_resources:
+                return bid
+            else:
+                print(f"Invalid bid. Please enter a value between 0 and {player_resources}.")
+        except ValueError:
+            print("Invalid input. Please enter a whole number.")
+
+def display_game_state(player_resources_dict, cards_remaining, last_round_result=None):
+    """
+    Displays the current state of the game to the players.
+
+    Args:
+        player_resources_dict (dict): A dictionary where keys are player names
+                                      and values are their current resource totals.
+        cards_remaining (int): The number of cards left in the deck.
+        last_round_result (dict, optional): Information about the previous round's outcome.
+                                           Defaults to None if it's the first round.
+                                           Expected keys: 'winner', 'winning_bid', 'revealed_card'.
+    """
+    print("\n--- Game State ---")
