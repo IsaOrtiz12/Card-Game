@@ -8,10 +8,11 @@ Everyone starts with 50 in resrouces. In each round they...
   3. The card they bid on amy increase, decrease or have no effect on thier resorces
   4. The game ends when there are no cards left or the players run out of resources.
 # What Each Secret Card Does 
-### Gain: 
-### Loss: 
-### Steal:
-### No Effect: 
+The amount a player will lose/gain/steal is determined by the "amount" value for the "Resource Loss" card in card_definitions. 
+### Gain: The player who won the bid for this card is set to gain ten rerouces! 
+### Loss: The player who won the bid for this card will lose 8 resources! 
+### Steal: The player who won the bid for this card will steal 5 resouces!
+### No Effect: The winner of this card will have no affect on anyone's resouces. 
 
 # What You See
 The game will start with Round 1 where both players are shown thier resources(50) and the cards remaining(14), after which each player can bid any ammount of resrouces on the secret card. Their possibliity for gianing, losing, stealing or having no affect is accounted for in the nezt round. 
@@ -23,6 +24,8 @@ In this folder, ensure that you open and run Blind_Bidding.py from your terminal
 So our program sometimes will allow players to go into the negative with resources. I mean it's not like our CPU will come find you for credit debt collections but still it's a little awkward when player 2 wins by like 30 becuase player 1 was in the negative!
 
 # Improvemtns 
-Though it wasnt technically a bug, our program would end the game after one round...and that was sort of meh. We should aim for something where we can actually play for more than a minute so we (as suggested) added a while loop.
+Though it wasnt technically a bug, our program would end the game after one round...and that was sort of meh. We want to aim for something where we can actually play for more than a minute so we (as suggested) added a while loop.
   Now players can play until there are either no cards left or the two are out of resrouces. 
+
+# What Each of Us Did
      
