@@ -28,4 +28,4 @@ Though it wasnt technically a bug, our program would end the game after one roun
   Now players can play until there are either no cards left or the two are out of resrouces. 
 
 # What Each of Us Did
-     
+
