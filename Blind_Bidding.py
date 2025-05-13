@@ -286,6 +286,7 @@ if __name__ == "__main__":
         else:
             print("\nNo more cards in the deck.")
 
+
     print("\n--- Game Over ---")
     for player, resources in player_resources.items():
         print(f"{player}: Final Resources = {resources}")
