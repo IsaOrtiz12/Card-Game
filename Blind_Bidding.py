@@ -72,6 +72,21 @@ def generate_deck(card_definitions):
             deck.append(card)
         
     return deck
+def resource_management_update(player_resources: dict, bid_outcome: dict,
+                        card_effects: dict, min_resource: int = 0,
+                        max_resource = 300) -> dict:
+    status_update = {}
+    for player_num, resource in player_resources.items():
+        if player_num in bid_outcome["winning_players"]:
+            resource -= bid_outcome["winning_bid"]
+            resource += card_effects.get("change_resource", 0)
+        status = "in_range"
+        if resource < min_resource:
+            status = "below_range"
+        elif resource > max_resource:
+            status = "above_range"
+        status_update[player_num] = {"resources":resource, "status":status}
+    return status_update
 
 if __name__ == "__main__":
     card_definitions = { "Resource Gain": {"quantity": 5, "effect": "gain", "amount": 10},
