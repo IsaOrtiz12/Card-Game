@@ -72,37 +72,10 @@ def generate_deck(card_definitions):
             deck.append(card)
         
     return deck
+
+
 def resource_management_update(player_resources: dict, bid_outcome: dict,
                         card_effects: dict, min_resource: int = 0,
-                        max_resource = 300) -> dict:
-    status_update = {}
-    for player_num, resource in player_resources.items():
-        if player_num in bid_outcome["winning_players"]:
-            resource -= bid_outcome["winning_bid"]
-            resource += card_effects.get("change_resource", 0)
-        status = "in_range"
-        if resource < min_resource:
-            status = "below_range"
-        elif resource > max_resource:
-            status = "above_range"
-        status_update[player_num] = {"resources":resource, "status":status}
-    return status_update
-
-if __name__ == "__main__":
-    card_definitions = { "Resource Gain": {"quantity": 5, "effect": "gain", "amount": 10},
-        "Resource Loss": {"quantity": 3, "effect": "lose", "amount": 8},
-        "Steal Resource": {"quantity": 2, "effect": "steal", "amount": 5},
-        "No Effect": {"quantity": 4, "effect": "none", "amount": 0}
-    } 
-    
-    deck = generate_deck(card_definitions)
-    for card in deck: 
-        print(card)        
-        
-        
-
-def resource_management_update(player_resources: dict, bid_outcome: dict, 
-                        card_effects: dict, min_resource: int = 0, 
                         max_resource = 300) -> dict:
     status_update = {}
 
@@ -113,18 +86,16 @@ def resource_management_update(player_resources: dict, bid_outcome: dict,
     bid_outcome (dict): the outcome of the bidding round
     card_effects (dict): the actual card effects on the resources
     min_resource (int): minimum resources
-    max_resource (int): maximum resources   
-
-
+    max_resource (int): maximum resources
 
     Returns:
-        dict: updated resource amounts 
+        dict: updated resource amounts
     """
 
     for player_num, resource in player_resources.items():
-        if player_num == bid_outcome["Winner"]:
+        if player_num in bid_outcome["winning_players"]: # Changed to handle multiple winners
             #removes the cost of bidding
-            resource -= bid_outcome["bid_cost"]
+            resource -= bid_outcome["winning_bid"]
             #adds the card effect
             resource += card_effects.get("change_resource", 0)
 
@@ -136,32 +107,29 @@ def resource_management_update(player_resources: dict, bid_outcome: dict,
         elif resource > max_resource:
             status = "above_range"
 
-
-
         status_update[player_num] = {"resources":resource, "status":status}
 
     return status_update
 
-
-def get_player_bid(player_resources):
+def get_player_bid(player_resources_amount): # Modified to take resource amount
     """
     Prompts the current player to enter their secret bid, validates the input,
     and returns the valid bid amount.
 
     Args:
-        player_resources (int): The current resource total of the player.
+        player_resources_amount (int): The current resource total of the player.
 
     Returns:
         int: A valid bid amount entered by the player.
     """
     while True:
         try:
-            bid_str = input(f"Enter your secret bid (0-{player_resources}): ")
+            bid_str = input(f"Enter your secret bid (0-{player_resources_amount}): ")
             bid = int(bid_str)
-            if 0 <= bid <= player_resources:
+            if 0 <= bid <= player_resources_amount:
                 return bid
             else:
-                print(f"Invalid bid. Please enter a value between 0 and {player_resources}.")
+                print(f"Invalid bid. Please enter a value between 0 and {player_resources_amount}.")
         except ValueError:
             print("Invalid input. Please enter a whole number.")
 
@@ -184,7 +152,7 @@ def display_game_state(player_resources_dict, cards_remaining, last_round_result
 
     if last_round_result:
         print("\n--- Last Round Result ---")
-        print(f"Winner: {last_round_result['winner']}")
+        print(f"Winner(s): {', '.join(last_round_result['winning_players'])}") # Handling potential ties
         print(f"Winning Bid: {last_round_result['winning_bid']}")
         print(f"Revealed Card: {last_round_result['revealed_card']}")
     print("--------------------")
@@ -198,80 +166,136 @@ def display_round_start(current_round):
     """
     print(f"\n--- Round {current_round} - Bidding Phase ---")
 
-def display_bidding_outcome(bids, winning_player, winning_bid):
+def display_bidding_outcome(bids, winning_players, winning_bid): # Modified to take winning_players
     """
     Displays the bids made by each player and the outcome of the bidding.
     Args:
         bids (dict): A dictionary where keys are player names and values are their bids.
-        winning_player (str): The name of the player who won the bid.
+        winning_players (list): The name(s) of the player(s) who won the bid.
         winning_bid (int): The winning bid amount.
     """
     print("\n--- Bidding Outcome ---")
     for player, bid in bids.items():
         print(f"{player} bid: {bid}")
-    print(f"Winner of the round: {winning_player} with a bid of {winning_bid}")
+    print(f"Winner(s) of the round: {', '.join(winning_players)} with a bid of {winning_bid}") # Handling potential ties
     print("-----------------------")
 
-# --- Mock Functions (for demonstration purposes) ---
-def mock_reveal_card():
+def reveal_card(deck):
     """
-    A mock function that simulates revealing a card.
-    In the real game, this would interact with Kevin's card logic.
-    """
+    Reveals and removes the top card from the deck.
 
-    effects = ["Resource Gain", "Resource Loss", "No Effect"]
-    return random.choice(effects)
+    Args:
+        deck (list): The list representing the deck of cards.
 
-def mock_apply_card_effect(player_resources, card_effect, bid_amount, winning_player):
+    Returns:
+        dict or None: The revealed card (dictionary) if the deck is not empty,
+                     None otherwise.
     """
-    A mock function that simulates applying the effect of a revealed card.
-    In the real game, this would interact with Ibrahim's resource management logic.
+    if deck:
+        return deck.pop(0)
+    else:
+        return None
+
+def apply_card_effect(player_resources, revealed_card, winning_players, winning_bid):
+    """
+    Applies the effect of the revealed card to the winning player(s).
+
+    Args:
+        player_resources (dict): Dictionary of player resources.
+        revealed_card (dict): The revealed card's information.
+        winning_players (list): List of players who won the bid.
+        winning_bid (int): The amount of the winning bid.
+
+    Returns:
+        dict: Updated player resources.
     """
     updated_resources = player_resources.copy()
-    if card_effect == "Resource Gain":
-        gain = random.randint(5, 15)
-        updated_resources[winning_player] += gain
-        print(f"The card granted {gain} resources to {winning_player}.")
-    elif card_effect == "Resource Loss":
-        loss = random.randint(5, 10)
-        updated_resources[winning_player] -= loss
-        print(f"The card cost {loss} resources to {winning_player}.")
-    elif card_effect == "No Effect":
-        print("The card had no immediate effect.")
+    if revealed_card:
+        effect = revealed_card["effect"]
+        amount = revealed_card["amount"]
+        for player in winning_players:
+            if effect == "gain":
+                updated_resources[player] += amount
+                print(f"{player} gained {amount} resources from the card.")
+            elif effect == "lose":
+                updated_resources[player] -= amount
+                print(f"{player} lost {amount} resources from the card.")
+            elif effect == "steal":
+                # Basic steal logic: Steal from a random other player
+                other_players = [p for p in player_resources if p != player and player_resources[p] > 0]
+                if other_players:
+                    stolen_from = random.choice(other_players)
+                    steal_amount = min(amount, player_resources[stolen_from])
+                    updated_resources[player] += steal_amount
+                    updated_resources[stolen_from] -= steal_amount
+                    print(f"{player} stole {steal_amount} resources from {stolen_from}.")
+                else:
+                    print(f"No one to steal from for {player}.")
+            elif effect == "none":
+                print(f"The card had no effect on {player}.")
+            updated_resources[player] -= winning_bid # Deduct the bid cost for all winners
     return updated_resources
 
 if __name__ == "__main__":
-    # Mock game setup
+    card_definitions = {
+        "Resource Gain": {"quantity": 5, "effect": "gain", "amount": 10},
+        "Resource Loss": {"quantity": 3, "effect": "lose", "amount": 8},
+        "Steal Resource": {"quantity": 2, "effect": "steal", "amount": 5},
+        "No Effect": {"quantity": 4, "effect": "none", "amount": 0}
+    }
+    
+    deck = generate_deck(card_definitions)
+    random.shuffle(deck) # Shuffle the deck for randomness
+
     players = ["Player 1", "Player 2"]
-    player_resources = {"Player 1": 50, "Player 2": 50}
-    cards_in_deck = 10
-    round_number = 1
-    last_round = None
+    player_resources = {player: 50 for player in players}
+    round_number = 0
 
-    # Simulate a single round
-    display_round_start(round_number)
-    display_game_state(player_resources, cards_in_deck, last_round)
+    while all(resources > 0 for resources in player_resources.values()) and deck:
+        round_number += 1
+        display_round_start(round_number)
+        display_game_state(player_resources, len(deck), last_round if 'last_round' in locals() else None)
 
-    bids = {}
-    for player in players:
-        bid = get_player_bid(player_resources[player])
-        bids[player] = bid
+        bids = {}
+        for player in players:
+            if player_resources[player] > 0: # Only allow players with resources to bid
+                bid = get_player_bid(player_resources[player])
+                bids[player] = bid
+            else:
+                print(f"{player} is out of resources and cannot bid.")
 
-    # Mock bidding winner determination (replace with Andrew's logic)
-    winning_player = max(bids, key=bids.get)
-    winning_bid = bids[winning_player]
+        # Remove players with no bids (out of resources)
+        active_bids = {player: bid for player, bid in bids.items() if player_resources[player] > 0}
 
-    display_bidding_outcome(bids, winning_player, winning_bid)
+        if not active_bids:
+            print("No players have resources to bid. Game over.")
+            break
 
-    # Mock card reveal and effect application
-    revealed_card = mock_reveal_card()
-    print(f"\nRevealed Card: {revealed_card}")
-    player_resources = mock_apply_card_effect(player_resources, revealed_card, winning_bid, winning_player)
-    player_resources[winning_player] -= winning_bid # Deduct the bid cost
+        bid_outcome = resolve_bid_round("current_card", player_resources, active_bids)
+        winning_players = bid_outcome['winning_players']
+        winning_bid = bid_outcome['winning_bid']
+        player_resources = bid_outcome['updated_resources'] # Update resources after bidding
 
-    cards_in_deck -= 1
-    last_round = {"winner": winning_player, "winning_bid": winning_bid, "revealed_card": revealed_card}
+        display_bidding_outcome(active_bids, winning_players, winning_bid)
 
-    display_game_state(player_resources, cards_in_deck, last_round) 
+        revealed_card = reveal_card(deck)
+        if revealed_card:
+            print(f"\nRevealed Card: {revealed_card['type']}")
+            player_resources = apply_card_effect(player_resources, revealed_card, winning_players, winning_bid)
+            last_round = {"winning_players": winning_players, "winning_bid": winning_bid, "revealed_card": revealed_card['type']}
+        else:
+            print("\nNo more cards in the deck.")
 
+    print("\n--- Game Over ---")
+    for player, resources in player_resources.items():
+        print(f"{player}: Final Resources = {resources}")
 
+    # Determine the winner(s)
+    winning_amount = max(player_resources.values())
+    winners = [player for player, resources in player_resources.items() if resources == winning_amount]
+    if len(winners) == 1:
+        print(f"The winner is {winners[0]}!")
+    elif winners:
+        print(f"It's a tie between {', '.join(winners)}!")
+    else:
+        print("No one has any resources left!")
