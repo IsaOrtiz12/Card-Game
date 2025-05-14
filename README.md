@@ -31,5 +31,3 @@ Though it wasn't technically a bug, our program would end the game after one rou
 
 # What Each of Us Did
      
-# Andrew Parson
-I created the core game logic that handles each bidding round. I used the max() function to find the highest bid, a list comprehension to collect all players who made that bid (in case of a tie), and an if/else statement inside a for loop to update each player's resources only deducting from the winners. I used dictionary operations as well to store and return the updated player resources, the winning bid, and the list of winners in a structured format. 
